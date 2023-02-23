@@ -35,16 +35,30 @@ namespace UniverseLib.Input
         private static MethodInfo m_getMouseButtonUp;
         private static MethodInfo m_resetInputAxes;
 
+        // Reads are wrapped in InputBlocker's allow scope so UniverseLib's own input isn't blocked while its UI is open.
         public Vector2 MousePosition => (Vector3)p_mousePosition.GetValue(null, null);
-        public Vector2 MouseScrollDelta => (Vector2)p_mouseDelta.GetValue(null, null);
+        public Vector2 MouseScrollDelta => (Vector2)Allowed(() => p_mouseDelta.GetValue(null, null));
 
-        public bool GetKey(KeyCode key) => (bool)m_getKey.Invoke(null, new object[] { key });
-        public bool GetKeyDown(KeyCode key) => (bool)m_getKeyDown.Invoke(null, new object[] { key });
-        public bool GetKeyUp(KeyCode key) => (bool)m_getKeyUp.Invoke(null, new object[] { key });
+        public bool GetKey(KeyCode key) => (bool)Allowed(() => m_getKey.Invoke(null, new object[] { key }));
+        public bool GetKeyDown(KeyCode key) => (bool)Allowed(() => m_getKeyDown.Invoke(null, new object[] { key }));
+        public bool GetKeyUp(KeyCode key) => (bool)Allowed(() => m_getKeyUp.Invoke(null, new object[] { key }));
 
-        public bool GetMouseButton(int btn) => (bool)m_getMouseButton.Invoke(null, new object[] { btn });
-        public bool GetMouseButtonDown(int btn) => (bool)m_getMouseButtonDown.Invoke(null, new object[] { btn });
-        public bool GetMouseButtonUp(int btn) => (bool)m_getMouseButtonUp.Invoke(null, new object[] { btn });
+        public bool GetMouseButton(int btn) => (bool)Allowed(() => m_getMouseButton.Invoke(null, new object[] { btn }));
+        public bool GetMouseButtonDown(int btn) => (bool)Allowed(() => m_getMouseButtonDown.Invoke(null, new object[] { btn }));
+        public bool GetMouseButtonUp(int btn) => (bool)Allowed(() => m_getMouseButtonUp.Invoke(null, new object[] { btn }));
+
+        static object Allowed(Func<object> read)
+        {
+            InputBlocker.BeginAllow();
+            try
+            {
+                return read();
+            }
+            finally
+            {
+                InputBlocker.EndAllow();
+            }
+        }
 
         public void ResetInputAxes() => m_resetInputAxes.Invoke(null, ArgumentUtility.EmptyArgs);
 

@@ -1,9 +1,9 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UniverseLib.UI;
 
 namespace UniverseLib.Input
@@ -28,6 +28,7 @@ namespace UniverseLib.Input
             InitKeycodes();
             CursorUnlocker.Init();
             EventSystemHelper.Init();
+            InputBlocker.Init();
         }
 
         private static void InitHandler()

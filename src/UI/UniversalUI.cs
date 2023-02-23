@@ -92,6 +92,7 @@ public static class UniversalUI
             else if (uiBase != PanelManager.resizeCursorUIBase)
                 PanelManager.ForceEndResize();
 
+            InputBlocker.Invalidate();
             CursorUnlocker.UpdateCursorControl();
             return;
         }
@@ -119,6 +120,8 @@ public static class UniversalUI
 
     internal static void Update()
     {
+        InputBlocker.Update();
+
         if (!CanvasRoot || Initializing)
             return;
 
