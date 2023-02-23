@@ -1,9 +1,8 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UniverseLib.UI;
 
 namespace UniverseLib.Input
@@ -28,6 +27,7 @@ namespace UniverseLib.Input
             InitKeycodes();
             CursorUnlocker.Init();
             EventSystemHelper.Init();
+            InitPatches();
         }
 
         private static void InitHandler()
@@ -101,6 +101,26 @@ namespace UniverseLib.Input
                     list.Add(kc);
             }
             allKeycodes = list.ToArray();
+        }
+
+        private static void InitPatches()
+        {
+            if (inputHandler is LegacyInput)
+            {
+                Universe.Patch(LegacyInput.TInput, "GetKeyDown", MethodType.Normal, new Type[] { typeof(KeyCode) }, AccessTools.Method(typeof(InputManager), nameof(Prefix_Input_GetKey)));
+                Universe.Patch(LegacyInput.TInput, "GetKeyDown", MethodType.Normal, new Type[] { typeof(string) }, AccessTools.Method(typeof(InputManager), nameof(Prefix_Input_GetKey)));
+                Universe.Patch(LegacyInput.TInput, "GetKey", MethodType.Normal, new Type[] { typeof(KeyCode) }, AccessTools.Method(typeof(InputManager), nameof(Prefix_Input_GetKey)));
+                Universe.Patch(LegacyInput.TInput, "GetKey", MethodType.Normal, new Type[] { typeof(string) }, AccessTools.Method(typeof(InputManager), nameof(Prefix_Input_GetKey)));
+                Universe.Patch(LegacyInput.TInput, "GetKeyUp", MethodType.Normal, new Type[] { typeof(KeyCode) }, AccessTools.Method(typeof(InputManager), nameof(Prefix_Input_GetKey)));
+                Universe.Patch(LegacyInput.TInput, "GetKeyUp", MethodType.Normal, new Type[] { typeof(string) }, AccessTools.Method(typeof(InputManager), nameof(Prefix_Input_GetKey)));
+                Universe.Patch(LegacyInput.TInput, "GetAxis", MethodType.Normal, new Type[] { typeof(string) }, AccessTools.Method(typeof(InputManager), nameof(Prefix_Input_GetKey)));
+                Universe.Patch(LegacyInput.TInput, "GetAxisRaw", MethodType.Normal, new Type[] { typeof(string) }, AccessTools.Method(typeof(InputManager), nameof(Prefix_Input_GetKey)));
+            }
+        }
+
+        private static bool Prefix_Input_GetKey()
+        {
+            return EventSystemHelper.CurrentEventSystem != UniversalUI.EventSys || Assembly.GetCallingAssembly() == Assembly.GetExecutingAssembly();
         }
 
         #endregion
