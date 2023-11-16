@@ -1,6 +1,4 @@
-﻿using HarmonyLib;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -8,7 +6,6 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UniverseLib.UI;
 using UniverseLib.Utility;
-using Il2CppInterop.Runtime.InteropTypes.Arrays;
 
 namespace UniverseLib.Input
 {
