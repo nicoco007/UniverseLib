@@ -5,8 +5,8 @@
         <LangVersion>10.0</LangVersion>
         <DefineConstants>
         </DefineConstants>
-        <DebugSymbols>false</DebugSymbols>
-        <DebugType>none</DebugType>
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>portable</DebugType>
         <PlatformTarget>AnyCPU</PlatformTarget>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -108,6 +108,7 @@
 	<Target Name="CopyToGameFolder" AfterTargets="Build" Condition="'$(GameDirectory)' != ''">
 		<ItemGroup>
 			<FilesToCopy Include="$(TargetPath)" />
+			<FilesToCopy Include="$(TargetDir)$(TargetName).pdb" />
 			<FilesToCopy Include="$(TargetDir)$(TargetName).xml" />
 		</ItemGroup>
 		
