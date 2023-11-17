@@ -3,8 +3,8 @@
         <Configuration Condition=" '$(Configuration)' == '' ">Release_IL2CPP_Unhollower</Configuration>
         <OutputType>Library</OutputType>
         <LangVersion>latest</LangVersion>
-        <DebugSymbols>false</DebugSymbols>
-        <DebugType>embedded</DebugType>
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>portable</DebugType>
         <PlatformTarget>AnyCPU</PlatformTarget>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -152,6 +152,9 @@
     <ItemGroup>
         <EmbeddedResource Include="Resources\*" />
     </ItemGroup>
+    <ItemGroup>
+      <None Include="UniverseLib.csproj.user" />
+    </ItemGroup>
     <Target Name="CopyNuget" AfterTargets="build">
 
         <!-- if IL2CPP Unhollower -->
@@ -180,4 +183,19 @@
         <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll" DestinationFolder="$(OutputPath)..\NuGet_Mono\lib\net35" Condition="'$(Configuration)' == 'Release_Mono'" />
         <Copy SourceFiles="$(OutputPath)$(AssemblyName).xml" DestinationFolder="$(OutputPath)..\NuGet_Mono\lib\net35" Condition="'$(Configuration)' == 'Release_Mono'" />
     </Target>
+	<Target Name="CopyToGameFolder" AfterTargets="Build" Condition="'$(GameDirectory)' != ''">
+		<ItemGroup>
+			<FilesToCopy Include="$(TargetPath)" />
+			<FilesToCopy Include="$(TargetDir)$(TargetName).pdb" />
+			<FilesToCopy Include="$(TargetDir)$(TargetName).xml" />
+		</ItemGroup>
+		
+		<PropertyGroup>
+			<TargetDirectory Condition="'$(Configuration)' == 'Release_Mono'">$(GameDirectory)\Libs</TargetDirectory>
+			<TargetDirectory Condition="'$(Configuration)' != 'Release_Mono'">$(GameDirectory)\Mods</TargetDirectory>
+		</PropertyGroup>
+
+		<Message Importance="high" Text="$(TargetPath) -&gt; $(TargetDirectory)" />
+		<Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(TargetDirectory)" />
+	</Target>
 </Project>
