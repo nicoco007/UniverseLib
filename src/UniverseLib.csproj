@@ -93,6 +93,9 @@
     <ItemGroup>
         <EmbeddedResource Include="Resources\*" />
     </ItemGroup>
+    <ItemGroup>
+      <None Include="UniverseLib.csproj.user" />
+    </ItemGroup>
     <Target Name="CopyNuget" AfterTargets="build">
         <Message Text="Copying IL2CPP Interop files..." Importance="high" Condition="'$(Configuration)' == 'Release_IL2CPP'" />
         <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll" DestinationFolder="$(OutputPath)..\NuGet_IL2CPP\lib\net6.0" Condition="'$(Configuration)' == 'Release_IL2CPP'" />
@@ -102,4 +105,13 @@
         <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll" DestinationFolder="$(OutputPath)..\NuGet_Mono\lib\net35" Condition="'$(Configuration)' == 'Release_Mono'" />
         <Copy SourceFiles="$(OutputPath)$(AssemblyName).xml" DestinationFolder="$(OutputPath)..\NuGet_Mono\lib\net35" Condition="'$(Configuration)' == 'Release_Mono'" />
     </Target>
+	<Target Name="CopyToGameFolder" AfterTargets="Build" Condition="'$(GameDirectory)' != ''">
+		<ItemGroup>
+			<FilesToCopy Include="$(TargetPath)" />
+			<FilesToCopy Include="$(TargetDir)$(TargetName).xml" />
+		</ItemGroup>
+		
+		<Message Importance="high" Text="$(TargetPath) -&gt; $(GameDirectory)" />
+		<Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(GameDirectory)" />
+	</Target>
 </Project>
