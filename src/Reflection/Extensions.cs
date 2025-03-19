@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
+using UniverseLib.Utility;
 
 namespace UniverseLib
 {
@@ -43,12 +42,35 @@ namespace UniverseLib
 
         // ------- Misc extensions --------
 
-        [Obsolete("This method is no longer necessary, just use Assembly.GetTypes().", false)]
         public static IEnumerable<Type> TryGetTypes(this Assembly asm)
         {
-            // This is redundant since we patch Assembly.GetTypes with a Finalizer anyway.
-            // Let's just call the method and let our patch handle it should exceptions occur.
-            return asm.GetTypes();
+            try
+            {
+                return asm.GetTypes();
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                Universe.LogWarning($"Failed to get types from assembly {asm.FullName}\n{ex}");
+                return ReflectionUtility.TryExtractTypesFromException(ex);
+            }
+            catch (Exception ex) // It was some other exception, try use GetExportedTypes
+            {
+                Universe.LogWarning($"Failed to get types from assembly {asm.FullName}\n{ex}");
+
+                try
+                {
+                    return asm.GetExportedTypes();
+                }
+                catch (ReflectionTypeLoadException e)
+                {
+                    Universe.LogWarning($"Failed to get exported types from assembly {asm.FullName}\n{e}");
+                    return ReflectionUtility.TryExtractTypesFromException(e);
+                }
+                catch
+                {
+                    return ArgumentUtility.EmptyTypes;
+                }
+            }
         }
 
         /// <summary>

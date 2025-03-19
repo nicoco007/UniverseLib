@@ -26,8 +26,6 @@ namespace UniverseLib
 
         internal static void Init()
         {
-            ReflectionPatches.Init();
-
             Instance =
 #if IL2CPP
                 new Il2CppReflection();
@@ -107,7 +105,7 @@ namespace UniverseLib
                     {
                         // load and resolve the assembly's types.
                         Assembly asm = Assembly.LoadFile(dllPath);
-                        asm.GetTypes();
+                        asm.TryGetTypes();
                     }
                     catch { }
                 }
@@ -116,7 +114,7 @@ namespace UniverseLib
 
         internal static void CacheTypes(Assembly asm)
         {
-            foreach (Type type in asm.GetTypes())
+            foreach (Type type in asm.TryGetTypes())
             {
                 // Cache namespace if there is one
                 if (!string.IsNullOrEmpty(type.Namespace) && !uniqueNamespaces.Contains(type.Namespace))
