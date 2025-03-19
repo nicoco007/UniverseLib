@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UniverseLib.UI;
@@ -120,7 +121,7 @@ namespace UniverseLib.Input
 
         private static bool Prefix_Input_GetKey()
         {
-            return EventSystemHelper.CurrentEventSystem != UniversalUI.EventSys || Assembly.GetCallingAssembly() == Assembly.GetExecutingAssembly();
+            return EventSystemHelper.CurrentEventSystem != UniversalUI.EventSys || Assembly.GetCallingAssembly() == Assembly.GetExecutingAssembly() || new System.Diagnostics.StackTrace().GetFrames().Any(f => f.GetMethod().DeclaringType.Assembly == Assembly.GetExecutingAssembly());
         }
 
         #endregion

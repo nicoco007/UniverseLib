@@ -1,29 +1,24 @@
 ﻿#if IL2CPP
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Runtime.InteropServices;
-using System.Reflection;
-using System.Collections;
-using System.IO;
-using System.Diagnostics.CodeAnalysis;
-using UniverseLib;
-using BF = System.Reflection.BindingFlags;
-using UnityEngine;
-using UniverseLib.Config;
 using HarmonyLib;
-using UniverseLib.Utility;
-using System.Text.RegularExpressions;
-using UniverseLib.Reflection;
-using System.Diagnostics;
-using UniverseLib.Runtime.Il2Cpp;
+using Il2CppInterop.Common.Attributes;
+using Il2CppInterop.Generator;
+using Il2CppInterop.Generator.Extensions;
+using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.InteropTypes;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
-using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.Runtime;
-using Il2CppInterop.Common.Attributes;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using UniverseLib.Config;
+using UniverseLib.Reflection;
+using UniverseLib.Runtime.Il2Cpp;
+using UniverseLib.Utility;
+using BF = System.Reflection.BindingFlags;
 
 namespace UniverseLib
 {
@@ -127,18 +122,13 @@ namespace UniverseLib
             if (IsString(cppType))
                 return typeof(string);
 
-            string fullname = cppType.FullName;
+            // TODO: prefix mode shouldn't be hardcoded
+            string fullName = cppType.FullName.UnSystemify(new GeneratorOptions() { Il2CppPrefixMode = GeneratorOptions.PrefixMode.OptOut });
 
-            if (obfuscatedToDeobfuscatedTypes.TryGetValue(fullname, out Type deob))
+            if (obfuscatedToDeobfuscatedTypes.TryGetValue(fullName, out Type deob))
                 return deob;
 
-            // An Il2CppType cannot ever be a System type.
-            // Unhollower returns Il2CppSystem types as System for some reason.
-            // Let's just manually fix that.
-            if (fullname.StartsWith("System."))
-                fullname = $"Il2Cpp{fullname}";
-
-            if (!AllTypes.TryGetValue(fullname, out Type monoType))
+            if (!AllTypes.TryGetValue(fullName, out Type monoType))
             {
                 // If it's not in our dictionary, it's most likely a bound generic type.
                 // Let's use GetType with the AssemblyQualifiedName, and fix System.* types to be Il2CppSystem.*
@@ -802,13 +792,12 @@ namespace UniverseLib
 
         static IEnumerator<DictionaryEntry> EnumerateCppHashTable(Il2CppSystem.Collections.Hashtable hashtable)
         {
-            for (int i = 0; i < hashtable.buckets.Count; i++)
-            {
-                Il2CppSystem.Collections.Hashtable.bucket bucket = hashtable.buckets[i];
-                if (bucket == null || bucket.key == null)
-                    continue;
+            Il2CppSystem.Collections.IDictionaryEnumerator dictEnumerator = hashtable.GetEnumerator();
+            Il2CppSystem.Collections.IEnumerator enumerator = dictEnumerator.Cast<Il2CppSystem.Collections.IEnumerator>();
 
-                yield return new DictionaryEntry(bucket.key, bucket.val);
+            while (enumerator.MoveNext())
+            {
+                yield return new DictionaryEntry(dictEnumerator.Key, dictEnumerator.Value);
             }
         }
 

@@ -1,5 +1,10 @@
 ﻿using UnityEngine;
 
+#if IL2CPP
+using System;
+using Il2CppInterop.Runtime.Injection;
+#endif
+
 namespace UniverseLib
 {
     /// <summary>

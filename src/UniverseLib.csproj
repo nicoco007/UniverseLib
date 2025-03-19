@@ -21,8 +21,8 @@
         <TargetFramework>net6</TargetFramework>
         <OutputPath>..\Release\UniverseLib.Il2Cpp\</OutputPath>
         <DefineConstants>IL2CPP</DefineConstants>
-        <AssemblyName>UniverseLib.IL2CPP</AssemblyName>
-        <DocumentationFile>..\Release\UniverseLib.Il2Cpp\UniverseLib.IL2CPP.xml</DocumentationFile>
+        <AssemblyName>UniverseLib.IL2CPP.Interop</AssemblyName>
+        <DocumentationFile>..\Release\UniverseLib.Il2Cpp\UniverseLib.IL2CPP.Interop.xml</DocumentationFile>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Release_Mono' ">
         <TargetFramework>net35</TargetFramework>
@@ -89,6 +89,12 @@
             <HintPath>..\lib\interop\UnityEngine.IMGUIModule.dll</HintPath>
             <Private>False</Private>
         </Reference>
+        <Reference Include="AsmResolver">
+            <HintPath>..\lib\interop\AsmResolver.dll</HintPath>
+        </Reference>
+        <Reference Include="Il2CppInterop.Generator">
+            <HintPath>..\lib\interop\Il2CppInterop.Generator.dll</HintPath>
+        </Reference>
     </ItemGroup>
     <ItemGroup>
         <EmbeddedResource Include="Resources\*" />
@@ -105,14 +111,14 @@
         <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll" DestinationFolder="$(OutputPath)..\NuGet_Mono\lib\net35" Condition="'$(Configuration)' == 'Release_Mono'" />
         <Copy SourceFiles="$(OutputPath)$(AssemblyName).xml" DestinationFolder="$(OutputPath)..\NuGet_Mono\lib\net35" Condition="'$(Configuration)' == 'Release_Mono'" />
     </Target>
-	<Target Name="CopyToGameFolder" AfterTargets="Build" Condition="'$(GameDirectory)' != ''">
-		<ItemGroup>
-			<FilesToCopy Include="$(TargetPath)" />
-			<FilesToCopy Include="$(TargetDir)$(TargetName).pdb" />
-			<FilesToCopy Include="$(TargetDir)$(TargetName).xml" />
-		</ItemGroup>
-		
-		<Message Importance="high" Text="$(TargetPath) -&gt; $(GameDirectory)" />
-		<Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(GameDirectory)" />
-	</Target>
+    <Target Name="CopyToGameFolder" AfterTargets="Build" Condition="'$(GameDirectory)' != ''">
+        <ItemGroup>
+            <FilesToCopy Include="$(TargetPath)" />
+            <FilesToCopy Include="$(TargetDir)$(TargetName).pdb" />
+            <FilesToCopy Include="$(TargetDir)$(TargetName).xml" />
+        </ItemGroup>
+        
+        <Message Importance="high" Text="$(TargetPath) -&gt; $(GameDirectory)" />
+        <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(GameDirectory)\Mods" />
+    </Target>
 </Project>

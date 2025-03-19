@@ -3,6 +3,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using UniverseLib.UI.Models;
 
+#if IL2CPP
+using Il2CppInterop.Runtime;
+#endif
+
 namespace UniverseLib.UI.Widgets
 {
     /// <summary>
