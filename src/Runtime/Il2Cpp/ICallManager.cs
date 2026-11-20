@@ -1,4 +1,4 @@
-#if CPP
+﻿#if CPP
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -35,7 +35,18 @@ public static class ICallManager
     /// <exception cref="MissingMethodException" />
     public static bool TryGetICall<T>(string signature, out T? iCall) where T : Delegate
     {
-        iCall = GetICall<T>(signature);
+        // Callers use this to probe for iCalls which may not exist in this Unity version, so don't warn.
+        iCall = ResolveICall<T>(signature, allowInjected: true, warn: false);
+        return iCall != null;
+    }
+
+    /// <summary>
+    /// Like <see cref="TryGetICall{T}"/>, but only matches <paramref name="signature"/> exactly (no "_Injected" fallback),
+    /// for callers that need to know which calling convention the iCall uses.
+    /// </summary>
+    internal static bool TryGetICallExact<T>(string signature, out T? iCall) where T : Delegate
+    {
+        iCall = ResolveICall<T>(signature, allowInjected: false, warn: false);
         return iCall != null;
     }
 
@@ -49,23 +60,28 @@ public static class ICallManager
     /// <returns>The <typeparamref name="T"/> delegate if successful.</returns>
     /// <exception cref="MissingMethodException" />
     public static T? GetICall<T>(string signature) where T : Delegate
+        => ResolveICall<T>(signature, allowInjected: true, warn: true);
+
+    private static T? ResolveICall<T>(string signature, bool allowInjected, bool warn) where T : Delegate
     {
-        if (iCallCache.TryGetValue(signature, out var sig))
+        string key = allowInjected ? signature : $"exact:{signature}";
+        if (iCallCache.TryGetValue(key, out var cached))
         {
-            return (T)sig;
+            return (T)cached;
         }
         // In Unity 6000, most iCall signatures have been renamed from xxx to xxx_Injected.
         if (!(
                 TryResolveICall(signature, out var ptr) ||
-                TryResolveICall($"{signature}_Injected", out ptr)
+                (allowInjected && TryResolveICall($"{signature}_Injected", out ptr))
             ))
         {
-            Universe.LogWarning($"Could not find any iCall with the signature '{signature}'!");
+            if (warn)
+                Universe.LogWarning($"Could not find any iCall with the signature '{signature}'!");
             return null;
         }
 
         Delegate iCall = Marshal.GetDelegateForFunctionPointer(ptr, typeof(T));
-        iCallCache.Add(signature, iCall);
+        iCallCache.Add(key, iCall);
 
         return (T)iCall;
     }
@@ -101,7 +117,7 @@ public static class ICallManager
 
         var loopSig = new List<string>(possibleSignatures);
         // In Unity 6000, most iCall signatures have been renamed from xxx to xxx_Injected.
-        loopSig.Concat(possibleSignatures.Select(s => $"{s}_Injected"));
+        loopSig.AddRange(possibleSignatures.Select(s => $"{s}_Injected"));
 
         foreach (string sig in loopSig)
         {
